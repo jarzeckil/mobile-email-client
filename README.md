@@ -1,61 +1,52 @@
 # Mobile Email Client
 
-A robust and secure mobile email application built with **Flutter**, designed to handle complex mail operations efficiently. This project demonstrates a full-featured email client implementation supporting **IMAP** and **SMTP** protocols, local data persistence, and automatic server configuration discovery.
+A native mobile email client built with **Flutter**.
 
----
+I built this project to tackle the engineering challenges of implementing standard email protocols (IMAP/SMTP) from scratch on mobile. Unlike REST APIs, email protocols require maintaining persistent socket connections, handling complex MIME parsing, and managing state synchronization between a local database and a remote server.
 
-## 🚀 Overview
+## 🛠 Tech Stack
 
-This application serves as a comprehensive email client allowing users to manage their electronic correspondence directly from their mobile devices. It was engineered to solve common challenges in mobile mail apps, such as handling asynchronous network streams, managing secure authentication, and ensuring offline accessibility through local caching.
+| Component       | Technology         | Reason                                                                   |
+| --------------- | ------------------ | ------------------------------------------------------------------------ |
+| **Framework**   | Flutter (Dart)     | Cross-platform performance, strong typing.                               |
+| **Protocols**   | `enough_mail`      | Low-level handling of IMAP/SMTP commands and MIME parsing.               |
+| **Persistence** | `sqflite` (SQLite) | Offline-first architecture; caching headers and bodies for instant load. |
+| **State**       | `provider`         | Dependency injection and state management.                               |
+| **Security**    | `encrypt`          | AES encryption for storing sensitive credentials locally.                |
 
-**Key capabilities include:**
-* **Universal Connectivity**: Connects to major email providers via standard IMAP/SMTP protocols.
-* **Intelligent Setup**: Utilizes auto-discovery to automatically configure server settings based on the email domain.
-* **Offline Access**: Persists emails locally using SQLite, allowing users to view messages without an active internet connection.
-* **Real-time Updates**: Implements mail polling to fetch new messages as they arrive.
+## 🏗 Architecture & Key Decisions
 
-## 🛠️ Tech Stack & Libraries
+The application follows a **Service-Oriented Architecture** to decouple the UI from the complex protocol logic.
 
-The project leverages a modern ecosystem of Dart packages to ensure performance and maintainability:
+### 1. Offline-First Strategy
 
-* **Core Framework**: [Flutter](https://flutter.dev/) (SDK ^3.7.2)
-* **Email Protocols**: [`enough_mail`](https://pub.dev/packages/enough_mail) - Handles low-level IMAP/SMTP commands and MIME parsing.
-* **Local Database**: [`sqflite`](https://pub.dev/packages/sqflite) - SQL-based storage for caching emails and user data.
-* **State Management**: [`provider`](https://pub.dev/packages/provider) - Efficient state management and dependency injection.
-* **Security & Storage**:
-    * [`encrypt`](https://pub.dev/packages/encrypt) - For encrypting sensitive user credentials.
-    * [`shared_preferences`](https://pub.dev/packages/shared_preferences) - For managing simple persistent data like user settings.
+The app does not rely on a constant network connection to display data.
 
-## ✨ Features
+- **Write-through caching**: Incoming emails are parsed and immediately stored in SQLite.
+- **Optimistic UI**: The interface loads data from the local database first, then updates in the background when the network sync completes.
 
-### Implemented
-- **Secure Authentication**: User login with automatic server configuration discovery (Auto-config).
-- **Mail Composition**: Rich text email composition and sending via SMTP.
-- **Inbox Management**: IMAP-based mail fetching with support for pagination and history loading.
-- **Local Caching**: Incoming messages are saved to a local SQLite database for instant retrieval and offline viewing.
-- **Background Polling**: Service-based architecture to listen for incoming emails.
+### 2. Auto-Discovery Mechanism
 
-## 🏗️ Architecture
+Configuring IMAP/SMTP ports manually is bad UX.
 
-The project follows a **Service-Oriented Architecture (SOA)** with a clean separation of concerns:
+- I implemented an auto-discovery service that attempts to guess server settings based on the email domain (e.g., `gmail.com` -> `imap.gmail.com`).
 
-1.  **UI Layer**: Flutter widgets responsible for presentation.
-2.  **Service Layer**: The `MailService` singleton manages all network communication, decoupling the UI from protocol implementations.
-3.  **Data Layer**: `DatabaseHelper` and `SharedPreferences` handle local persistence, ensuring the app remains functional offline.
+### 3. Security
 
-## 🏁 Getting Started
+- Credentials are never stored in plain text.
+- Used `encrypt` package to secure the refresh tokens/passwords before writing them to `SharedPreferences`.
 
-To run this project locally:
+## 🚀 How to Run
 
-1.  **Clone the repository:**
+1.  **Clone & Install**
+
     ```bash
-    git clone [https://github.com/jarzeckil/mobile_email_client.git]
-    ```
-2.  **Install dependencies:**
-    ```bash
+    git clone https://github.com/jarzeckil/mobile_email_client.git
+    cd mobile_email_client
     flutter pub get
     ```
-3.  **Run the app:**
+
+2.  **Run**
     ```bash
     flutter run
     ```
